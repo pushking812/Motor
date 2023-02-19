@@ -1,53 +1,71 @@
+#pragma GCC push_options
+#pragma GCC optimize ("Os")
 
+#include <core.h> // Required by cpu
+#include <cpu.h>
 
-const int MOTOR = 3;  //Motor on Digital Pin 9
-const int SPEED = 2;  //Motor on Digital Pin 9
+#pragma GCC pop_options
 
-const int I = 50;
-const int DELTA_I = 15;
+const int motor[] = {3, 9, 10, 11}; // Motor PWM Difital Pins 
 
-int i = I;
-bool forward = true;
+const int speed[] = {A0, A1, A2, A3}; // Motor speed sensor on Analog Pins 
 
-void setup()
-{
+const int start_duty[] = {50, 50, 50, 50}; // start value of PWM 
+
+const int delta_duty[] = {10, 20, 30, 40}; // delta of changing PWM 
+
+int duty[] = {start_duty[0], start_duty[1], start_duty[2], start_duty[3]}; // current PWM
+
+bool forward[] = {true, true, true, true}; // increase (true) or reducing (false) 
+
+void setup () {
   Serial.begin(9600);
 
-  pinMode(MOTOR, OUTPUT);
-  pinMode(SPEED, INPUT_PULLUP);
+  //pinMode(motor[0], OUTPUT); // Not required for PWM
+  pinMode(speed[0], INPUT_PULLUP);
+  pinMode(speed[1], INPUT_PULLUP);
+  pinMode(speed[2], INPUT_PULLUP);
+  pinMode(speed[3], INPUT_PULLUP);
 }
 
-// 1 считываем и возвращаем скорость колеса, в обороты/сек
-// 2 скорость выводим в терминал
-// 3 крутим колесо с переменной скоростю
 void loop() {
-  setSpeed();
-  Serial.print(forward);
-  Serial.print(" ");
-  Serial.println(i);
+  setSpeed(0);
+  setSpeed(1);
+  setSpeed(2);
+  setSpeed(3);
+  debug_motor(0);
+  debug_motor(1);
+  debug_motor(2);
+  debug_motor(3);
+  Serial.println();
   
-  getSpeed();
+  //getSpeed();
 
-  delay(1000);
+  delay(250);
 }
 
-void setSpeed() {
-  if (forward == true && i <= 256) {
-    if ((256 - i) >= DELTA_I) i += DELTA_I;
+void debug_motor(int m) {
+   Serial.print(m); Serial.print(":"); Serial.print(forward[m]); 
+   Serial.print(" "); Serial.print(duty[m]); Serial.print("; ");
+}
+
+void setSpeed(int m) {
+  if (forward[m] == true && duty[m] <= 256) {
+    if ((256 - duty[m]) >= delta_duty[m]) duty[m] += delta_duty[m];
     else {
-      i = 256;
-      forward = false;
+      duty[m] = 256;
+      forward[m] = false;
     }
   }
-  if (forward == false && i >= 0) {
-    if ((i-DELTA_I) >= 0) i -= DELTA_I;
+  if (forward[m] == false && duty[m] >= 0) {
+    if ((duty[m]-delta_duty[m]) >= 0) duty[m] -= delta_duty[m];
     else {
-      i= 0;
-      forward = true;
+      duty[m]= 0;
+      forward[m] = true;
     }
   }
   
-  analogWrite(MOTOR, i);
+  analogWrite(motor[m], duty[m]);
 }
 
 int getSpeed() {
@@ -63,5 +81,5 @@ int getSpeed() {
   Serial.println(start-stop);
  
   // int sensorVal = digitalRead(2);
-  // notepad++
+  // prot
 }
