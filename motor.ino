@@ -28,20 +28,57 @@ void setup () {
   pinMode(speed[3], INPUT_PULLUP);
 }
 
+unsigned long timing;
+
 void loop() {
   setSpeed(0);
   setSpeed(1);
   setSpeed(2);
   setSpeed(3);
+
+  /*
   debug_motor(0);
   debug_motor(1);
   debug_motor(2);
   debug_motor(3);
   Serial.println();
+  */
   
-  //getSpeed();
-
+  getSpeed();
+  /*
+   if (millis() - timing > 250){ // Вместо 10000 подставьте нужное вам значение паузы 
+      timing = millis(); 
+      Serial.println ("0.25s");
+   }
+   */
   delay(250);
+}
+
+int getSpeed() {
+  unsigned long start = millis();
+  unsigned long stop=0;
+
+  Serial.print("start: ");Serial.println(start);
+  
+  bool print=true;
+  while ((millis()-start) <= 1000) {
+   if(((millis()-start)%100)==0) {
+      if (print) Serial.print(".");
+      print=false;
+   } else {
+      print=true;
+   }
+  }
+  
+  stop = millis();
+  
+  Serial.println();
+  Serial.print("stop: "); Serial.println(stop);
+  Serial.print("time,ms: "); Serial.println(stop-start);
+  Serial.println();
+ 
+  // int sensorVal = digitalRead(2);
+  // prot
 }
 
 void debug_motor(int m) {
@@ -66,20 +103,4 @@ void setSpeed(int m) {
   }
   
   analogWrite(motor[m], duty[m]);
-}
-
-int getSpeed() {
-  unsigned long start = millis();
-  unsigned long stop=0;
-
-  Serial.print("start: ");
-  while ((start - millis()) <= 1000);
-  stop = millis();
-  
-  Serial.print("stop: ");
-  Serial.print("time,ms: ");
-  Serial.println(start-stop);
- 
-  // int sensorVal = digitalRead(2);
-  // prot
 }
