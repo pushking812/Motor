@@ -37,6 +37,40 @@ int prevSpeed=0; 	// предыдущее значение скорости ша
 int prevDirection=1;// предыдущее значение направления движения шасси
 int prevAngle=0; 	// предыдущее значение угла поворота шасси
 
+const unsigned char PWM_MIN=0;
+const unsigned char PWM_MAX=255;
+
+const char SPD='S';		// код команды задания скорости движения шасси
+const byte SPD_MIN=0;	// минимальное допустимое значение
+const byte SPD_MAX=100;	// максимальное допустимое значение
+
+const char DIR='D'; 	// код команды задания направления движения шасси
+const byte DIR_FORW=1;	// допустимое значение 'вперед'
+const byte DIR_BACK=-1;	// допустимое значение 'назад'
+
+// массив с допустимыми значениями направлений движения
+int validDirValues[] = {DIR_FORW, DIR_BACK}; 
+
+const char ANG='A'; 	// код команды задания угла поворота шасси
+const byte ANG_MIN=-45;	// минимальное допустимое значение
+const byte ANG_MAX=45;	// максимальное допустимое значение
+
+// структура для хранения информации о команде
+struct Commands {
+  char code;              // код команды 
+  int minValue;           // минимальное допустимое значение команды
+  int maxValue;           // максимальное допустимое значение команды
+  int *validValues;       // массив допустимых значений
+  int numValidValues;     // количество допустимых значений
+};
+
+// массив команд
+struct Commands commands[3] = { { SPD, SPD_MIN, SPD_MAX, NULL, 0 },
+                                { DIR, DIR_BACK, DIR_FORW, validDirValues, 2 },
+                                { ANG, ANG_MIN, ANG_MAX, NULL, 0 } };
+// количество команд в массиве
+const int NUM_COMMANDS = 3;
+
 void setup() {
   for(int i=0; i<COUNT; i++) {
     // установка пинов для управления скоростью моторов в режим OUTPUT
@@ -55,7 +89,7 @@ void setup() {
   }
 }
 
-loop() {
+void loop() {
 	// parseCmd получает и обрабатывает команды последовательного порта,
 	// задающие значения Speed, Direction, Angle;
 	// при получении валидной команды:
@@ -64,52 +98,12 @@ loop() {
 	// получеными по последовательному порту значениями  
 	parseCmd();
 	
-	// isChanged отслеживает изменения в переменных Speed, Direction, Angle;,
-	// путем сравнения с prevSpeed, prevDirection или prevAngle, 
-	// вызывает соответсвующий обработчик setSpeed, setDirection или setAngle
-	isChanged();
-
 	delay(100);
 }
 
 //---------------------------------------------------------------
 
-const unsigned byte PWM_MIN=0;
-const unsigned byte PWM_MAX=255;
 
-const char SPD='S';		// код команды задания скорости движения шасси
-const byte SPD_MIN=0;	// минимальное допустимое значение
-const byte SPD_MAX=100;	// максимальное допустимое значение
-
-const char DIR='D'; 	// код команды задания направления движения шасси
-const byte DIR_FORW=1;	// допустимое значение 'вперед'
-const byte DIR_BACK=-1;	// допустимое значение 'назад'
-
-// массив с допустимыми значениями направлений движения
-int validDirValues[] = {DIR_FORW, DIR_BACK}; 
-
-const char ANG='A'; 	// код команды задания угла поворота шасси
-const byte ANG_MIN=-45;	// минимальное допустимое значение
-const byte ANG_MAX=45;	// максимальное допустимое значение
-
-// структура для хранения информации о команде
-struct Command {
-  char code;              // код команды 
-  int minValue;           // минимальное допустимое значение команды
-  int maxValue;           // максимальное допустимое значение команды
-  int *validValues;       // массив допустимых значений
-  int numValidValues;     // количество допустимых значений
-};
-
-// массив команд
-Command commands[] = {
-  {SPD, SPD_MIN, SPD_MAX, NULL, 0},
-  {DIR, DIR_BACK, DIR_FORW, validDirValues, 2)},
-  {ANG, ANG_MIN, ANG_MAX, NULL, 0},
-};
-
-// количество команд в массиве
-const int NUM_COMMANDS = sizeof(commands) / sizeof(commands[0]);
 
 // Функция для парсинга кода команды из строки
 char parseCmdCode(const char* cmd) {
@@ -124,7 +118,7 @@ int parseCmdValue(const char* cmd) {
 }
 
 // Функция для проверки валидности значения команды
-bool isValidValue(const Command& cmd, int val) {
+bool isValidValue(Commands& cmd, int val) {
   if (cmd.validValues != NULL && cmd.numValidValues > 0) {
     // проверка по массиву допустимых значений
     for (int j = 0; j < cmd.numValidValues; j++) {
@@ -142,12 +136,12 @@ bool isValidValue(const Command& cmd, int val) {
 void parseCmd() {
   char* cmd = Serial.readStringUntil('\n').c_str();
   char code = parseCmdCode(cmd);
-  int val = parseCmdValue(cmd);
+  int value = parseCmdValue(cmd);
 
   // искать команду в массиве и вызвать ее обработчик
   for (int i = 0; i < NUM_COMMANDS; i++) {
     if (code == commands[i].code) {
-      if (isValidValue(commands[i], val)) isChanged(code);
+      if (isValidValue(commands[i], value)) isChanged(code);
       else Serial.println("Error: Invalid value");
       
       return;
@@ -166,17 +160,17 @@ void isChanged(char cmd) {
   switch (cmd) {
     case SPD:
       if (Speed != prevSpeed) { // значение скорости изменилось
-        handleSpeedChange(); // вызываем обработчик изменения скорости
+        setSpeed(); // вызываем обработчик изменения скорости
       }
       break;
     case DIR:
       if (Direction != prevDirection) { // значение направления изменилось
-        handleDirectionChange(); // вызываем обработчик изменения направления
+        setDirection(); // вызываем обработчик изменения направления
       }
       break;
     case ANG:
       if (Angle != prevAngle) { // значение угла поворота изменилось
-        handleAngleChange(); // вызываем обработчик изменения угла поворота
+        setAngle(); // вызываем обработчик изменения угла поворота
       }
       break;
     default:
@@ -217,24 +211,23 @@ void setMotorDirection(int motor, int dir) {
 	direction[motor][1] = digitalRead(directionPins[motor][1]);
 }
 
-Заменить код функции setMotorSpeed(int motor, int speed):
 // Функция setMotorSpeed устанавливает скорость вращения мотора
-void setMotorSpeed(int motor, int speed) {
+void setMotorSpeed(int motor, int spd) {
 	// Преобразование заданной скорости в диапазон ШИМ-сигнала (0-255)
-	int pwm = map(speed, SPD_MIN, SPD_MAX, PWM_MIN, PWM_MAX);
+	int pwm = map(spd, SPD_MIN, SPD_MAX, PWM_MIN, PWM_MAX);
 
 	// Проверка на допустимость значений параметров
 	if (motor < 1 || motor > COUNT) {
 		Serial.println("Error: Invalid motor number");
 		return;
 	}
-	if (speed < SPD_MIN || speed > SPD_MAX) {
+	if (spd < SPD_MIN || spd > SPD_MAX) {
 		Serial.println("Error: Invalid speed value");
 		return;
 	}
 
 	// Сохранение заданной скорости в массиве speed[][]
-	speed[motor - 1] = speed;
+	speed[motor - 1] = spd;
 
 	// Установка требуемой скорости на пин speedPins[][]
 	analogWrite(speedPins[motor - 1], pwm);
