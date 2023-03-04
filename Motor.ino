@@ -53,6 +53,15 @@ const char ANG = 'A';      // код команды задания угла по
 const byte ANG_MIN = -45;  // минимальное допустимое значение
 const byte ANG_MAX = 45;   // максимальное допустимое значение
 
+// максимальная длина команды
+const byte MAXCMDLEN=16;
+
+// максимальное количество символов в коде команды кода
+const byte MAXCODLEN=1;
+
+// таймаут приема команды по последовательному порту
+const unsigned int CMD_TIMEOUT=1000;
+
 // структура для хранения информации о команде
 struct Commands {
   char code;           // код команды
@@ -94,173 +103,11 @@ void isChanged(char cmd) {
       break;
   }
 }
-//---------------------------------------------------------------
-// Функция setSpeed задает скорость движения шасси
-void setSpeed() {
-  // Установка значения Angle равным 0
-  Angle = 0;
-  
-
-  // Установка скорости вращения для каждого мотора
-  int leftSpeed = Speed * 1;
-  int rightSpeed = Speed;
-  setMotorSpeed(MLF, leftSpeed);
-  setMotorSpeed(MLR, leftSpeed);
-  setMotorSpeed(MRF, rightSpeed);
-  setMotorSpeed(MRR, rightSpeed);
-}
-//---------------------------------------------------------------
-// Функция setAngle задает угол поворота шасси
-void setAngle() {
-  // Вычисление коэффициента k, определяющего отношение скоростей моторов при повороте
-  float k = (45 - abs(Angle)) / 45.0;
-
-  // Установка скорости вращения для каждого мотора
-  int leftSpeed, rightSpeed;
-  if (Angle < 0) {  // Поворот влево
-    leftSpeed = Speed * (1 - k);
-    rightSpeed = Speed;
-  } else if (Angle > 0) {  // Поворот вправо
-    leftSpeed = Speed;
-    rightSpeed = Speed * (1 - k);
-  } else {  // Движение прямо
-    leftSpeed = Speed;
-    rightSpeed = Speed;
-  }
-  setMotorSpeed(MLF, leftSpeed);
-  setMotorSpeed(MLR, leftSpeed);
-  setMotorSpeed(MRF, rightSpeed);
-  setMotorSpeed(MRR, rightSpeed);
-}
-//---------------------------------------------------------------
-// Функция setDirection задает направление движения шасси
-void setDirection() {
-  // Остановка всех моторов
-  setMotorSpeed(MLF, 0);
-  setMotorSpeed(MLR, 0);
-  setMotorSpeed(MRF, 0);
-  setMotorSpeed(MRR, 0);
-
-  // Установка направления вращения для моторов на левой и правой сторонах шасси
-  if (Direction == 1) {  // движение вперед
-    setMotorDirection(MLF, DIR_FORW);
-    setMotorDirection(MLR, DIR_FORW);
-    setMotorDirection(MRF, DIR_FORW);
-    setMotorDirection(MRR, DIR_FORW);
-  } else if (Direction == -1) {  // движение назад
-    setMotorDirection(MLF, DIR_BACK);
-    setMotorDirection(MLR, DIR_BACK);
-    setMotorDirection(MRF, DIR_BACK);
-    setMotorDirection(MRR, DIR_BACK);
-  }
-
-  // Установка скорости вращения для каждого мотора
-  int leftSpeed = Speed * 1;
-  int rightSpeed = Speed;
-  setMotorSpeed(MLF, leftSpeed);
-  setMotorSpeed(MLR, leftSpeed);
-  setMotorSpeed(MRF, rightSpeed);
-  setMotorSpeed(MRR, rightSpeed);
-}
-//---------------------------------------------------------------
-// Функция setMotorDirection устанавливает направление вращения мотора
-void setMotorDirection(int motor, int dir) {
-  if (dir == 1) {  // установка направления вперед
-    digitalWrite(directionPins[motor][0], LOW);
-    digitalWrite(directionPins[motor][1], HIGH);
-  } else if (dir == -1) {  // установка направления назад
-    digitalWrite(directionPins[motor][0], HIGH);
-    digitalWrite(directionPins[motor][1], LOW);
-  } else {  // неверное направление
-    Serial.println("Error: Invalid motor direction");
-    return;
-  }
-
-  // сохранение направления вращения мотора
-  direction[motor][0] = digitalRead(directionPins[motor][0]);
-  direction[motor][1] = digitalRead(directionPins[motor][1]);
-}
-
-// Функция setMotorSpeed устанавливает скорость вращения мотора
-void setMotorSpeed(int motor, int spd) {
-  // Преобразование заданной скорости в диапазон ШИМ-сигнала (0-255)
-  int pwm = map(spd, SPD_MIN, SPD_MAX, PWM_MIN, PWM_MAX);
-
-  // Проверка на допустимость значений параметров
-  if (motor < 1 || motor > COUNT) {
-    Serial.println("Error: Invalid motor number");
-    return;
-  }
-  if (spd < SPD_MIN || spd > SPD_MAX) {
-    Serial.println("Error: Invalid speed value");
-    return;
-  }
-
-  // Сохранение заданной скорости в массиве speed[][]
-  speed[motor - 1] = spd;
-
-  // Установка требуемой скорости на пин speedPins[][]
-  analogWrite(speedPins[motor - 1], pwm);
-}
-
-//---------------------------------------------------------------
-
-// Функция для парсинга кода команды из строки
-char parseCmdCode(const char* cmd) {
-  return cmd[0];
-}
-
-// Функция для парсинга значения команды из строки
-int parseCmdValue(const char* cmd) {
-  char* value = strtok(NULL, ",");
-  if (value == NULL) return -1;
-  return atoi(value);
-}
-
-// Функция для проверки валидности значения команды
-bool isValidValue(Commands& cmd, int val) {
-  if (cmd.validValues != NULL && cmd.numValidValues > 0) {
-    // проверка по массиву допустимых значений
-    for (int j = 0; j < cmd.numValidValues; j++) {
-      if (val == cmd.validValues[j]) return true;
-    }
-  } else {
-    // проверка по минимальному и максимальному значению
-    if (val >= cmd.minValue && val <= cmd.maxValue) return true;
-  }
-  return false;
-}
-
-// Функция parseCmd получает и обрабатывает команды последовательного порта,
-// задает значениях глобальных переменных Speed, Direction и Angle
-void parseCmd() {
-  Serial.println("Info: parseCmd() start");
-  char* cmd = Serial.readStringUntil('\n').c_str();
-  char code = parseCmdCode(cmd);
-  int value = parseCmdValue(cmd);
-
-  // искать команду в массиве и вызвать ее обработчик
-  for (int i = 0; i < NUM_COMMANDS; i++) {
-    if (code == commands[i].code) {
-      if (isValidValue(commands[i], value)) isChanged(code);
-      else Serial.println("Error: Invalid value");
-
-      return;
-    }
-  }
-
-  // команда не найдена
-  Serial.print("Error: Invalid command code: "); Serial.println(code);
-  Serial.print(", value: "); Serial.println(value);
-  
-  Serial.println("Info: parseCmd() end");
-}
-
-//---------------------------------------------------------------
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("Info: setup() start");
+  //Serial.println("Info: setup() start");
+  
   for (int i = 0; i < COUNT; i++) {
     // установка пинов для управления скоростью моторов в режим OUTPUT
     pinMode(speedPins[i], OUTPUT);
@@ -284,7 +131,7 @@ void setup() {
 }
 
 void loop() {
-   Serial.println("Info: loop() start");
+  // Serial.println("Info: loop() start");
   // parseCmd получает и обрабатывает команды последовательного порта,
   // задающие значения Speed, Direction, Angle;
   // при получении валидной команды:
@@ -294,5 +141,5 @@ void loop() {
   parseCmd();
 
   delay(100);
-  Serial.println("Info: setup() end");
+  //Serial.println("Info: setup() end");
 }
