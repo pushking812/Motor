@@ -69,6 +69,56 @@ struct Commands commands[3] = { { SPD, SPD_MIN, SPD_MAX, NULL, 0 },
 // количество команд в массиве
 const int NUM_COMMANDS = 3;
 
+
+//---------------------------------------------------------------
+
+// Функция для парсинга кода команды из строки
+char parseCmdCode(const char* cmd) {
+  return cmd[0];
+}
+
+// Функция для парсинга значения команды из строки
+int parseCmdValue(const char* cmd) {
+  char* value = strtok(NULL, ",");
+  if (value == NULL) return -1;
+  return atoi(value);
+}
+
+// Функция для проверки валидности значения команды
+bool isValidValue(Commands& cmd, int val) {
+  if (cmd.validValues != NULL && cmd.numValidValues > 0) {
+    // проверка по массиву допустимых значений
+    for (int j = 0; j < cmd.numValidValues; j++) {
+      if (val == cmd.validValues[j]) return true;
+    }
+  } else {
+    // проверка по минимальному и максимальному значению
+    if (val >= cmd.minValue && val <= cmd.maxValue) return true;
+  }
+  return false;
+}
+
+// Функция parseCmd получает и обрабатывает команды последовательного порта,
+// задает значениях глобальных переменных Speed, Direction и Angle
+void parseCmd() {
+  char* cmd = Serial.readStringUntil('\n').c_str();
+  char code = parseCmdCode(cmd);
+  int value = parseCmdValue(cmd);
+
+  // искать команду в массиве и вызвать ее обработчик
+  for (int i = 0; i < NUM_COMMANDS; i++) {
+    if (code == commands[i].code) {
+      if (isValidValue(commands[i], value)) isChanged(code);
+      else Serial.println("Error: Invalid value");
+
+      return;
+    }
+  }
+
+  // команда не найдена
+  Serial.println("Error: Invalid command code");
+}
+
 //---------------------------------------------------------------
 
 // Функция void isChanged(), функция isChanged обеспечивает реакцию на
@@ -203,64 +253,7 @@ void setMotorSpeed(int motor, int spd) {
   analogWrite(speedPins[motor - 1], pwm);
 }
 
-//---------------------------------------------------------------
-
-// Функция для парсинга кода команды из строки
-char parseCmdCode(const char* cmd) {
-  return cmd[0];
-}
-
-// Функция для парсинга значения команды из строки
-int parseCmdValue(const char* cmd) {
-  char* value = strtok(NULL, ",");
-  if (value == NULL) return -1;
-  return atoi(value);
-}
-
-// Функция для проверки валидности значения команды
-bool isValidValue(Commands& cmd, int val) {
-  if (cmd.validValues != NULL && cmd.numValidValues > 0) {
-    // проверка по массиву допустимых значений
-    for (int j = 0; j < cmd.numValidValues; j++) {
-      if (val == cmd.validValues[j]) return true;
-    }
-  } else {
-    // проверка по минимальному и максимальному значению
-    if (val >= cmd.minValue && val <= cmd.maxValue) return true;
-  }
-  return false;
-}
-
-// Функция parseCmd получает и обрабатывает команды последовательного порта,
-// задает значениях глобальных переменных Speed, Direction и Angle
-void parseCmd() {
-  Serial.println("Info: parseCmd() start");
-  char* cmd = Serial.readStringUntil('\n').c_str();
-  char code = parseCmdCode(cmd);
-  int value = parseCmdValue(cmd);
-
-  // искать команду в массиве и вызвать ее обработчик
-  for (int i = 0; i < NUM_COMMANDS; i++) {
-    if (code == commands[i].code) {
-      if (isValidValue(commands[i], value)) isChanged(code);
-      else Serial.println("Error: Invalid value");
-
-      return;
-    }
-  }
-
-  // команда не найдена
-  Serial.print("Error: Invalid command code: "); Serial.println(code);
-  Serial.print(", value: "); Serial.println(value);
-  
-  Serial.println("Info: parseCmd() end");
-}
-
-//---------------------------------------------------------------
-
 void setup() {
-  Serial.begin(9600);
-  Serial.println("Info: setup() start");
   for (int i = 0; i < COUNT; i++) {
     // установка пинов для управления скоростью моторов в режим OUTPUT
     pinMode(speedPins[i], OUTPUT);
@@ -276,15 +269,9 @@ void setup() {
       digitalWrite(directionPins[i][j], LOW);
     }
   }
-  Serial.println("Info: setup() end");
-
-  setSpeed();
-  setAngle();
-  setDirection();
 }
 
 void loop() {
-   Serial.println("Info: loop() start");
   // parseCmd получает и обрабатывает команды последовательного порта,
   // задающие значения Speed, Direction, Angle;
   // при получении валидной команды:
@@ -294,5 +281,4 @@ void loop() {
   parseCmd();
 
   delay(100);
-  Serial.println("Info: setup() end");
 }
