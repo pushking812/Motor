@@ -44,22 +44,27 @@ const byte SPD_MAX = 100;  // максимальное допустимое зн
 
 const char DIR = 'D';      // код команды задания направления движения шасси
 const byte DIR_FORW = 1;   // допустимое значение 'вперед'
-const byte DIR_BACK = 0;  // допустимое значение 'назад'
+const byte DIR_BACK = 2;  // допустимое значение 'назад'
 
 // массив с допустимыми значениями направлений движения
 int validDirValues[] = { DIR_FORW, DIR_BACK };
 
-const char ANG = 'A';      // код команды задания угла поворота шасси
-const byte ANG_MIN = -45;  // минимальное допустимое значение
-const byte ANG_MAX = 45;   // максимальное допустимое значение
+// разделил ANG на LFT и RGT
+const char LFT = 'L';      // код команды задания угла поворота шасси влево
+const byte LFT_MIN = 0;  // минимальное допустимое значение влево
+const byte LFT_MAX = 45;   // максимальное допустимое значение влево
+
+const char RGT = 'R';      // код команды задания угла поворота шасси вправо
+const byte RGT_MIN = 0;  // минимальное допустимое значение вправо
+const byte RGT_MAX = 45;   // максимальное допустимое значение вправо
 
 // таймаут приема команды по последовательному порту
-const unsigned int CMD_TIMEOUT=1000;
+const unsigned int CMD_TIMEOUT = 1000;
 
 // Структура для хранения полученной команды
 struct parsedCmd {
-    char code;        // код команды
-    int value;        // значение команды
+  char code;        // код команды
+  int value;        // значение команды
 };
 
 // структура для хранения информации о команде
@@ -71,12 +76,16 @@ struct Commands {
   int numValidValues;  // количество допустимых значений
 };
 
-// массив команд
-struct Commands commands[3] = { { SPD, SPD_MIN, SPD_MAX, NULL, 0 },
-                                { DIR, DIR_BACK, DIR_FORW, validDirValues, 2 },
-                                { ANG, ANG_MIN, ANG_MAX, NULL, 0 } };
 // количество команд в массиве
-const int NUM_COMMANDS = 3;
+const int NUM_COMMANDS = 4;
+
+// массив команд
+struct Commands commands[NUM_COMMANDS] = {
+  { SPD, SPD_MIN, SPD_MAX, NULL, 0 },
+  { DIR, DIR_BACK, DIR_FORW, validDirValues, 2 },
+  { LFT, LFT_MIN, LFT_MAX, NULL, 0 },
+  { RGT, RGT_MIN, RGT_MAX, NULL, 0 }
+};
 
 // флаги проверки значения команды в ParseCmd -> parseCmdValue
 const byte IS_NUMBER = 0x01;
@@ -92,31 +101,21 @@ const byte MAXCMDLEN = 16;
 
 // Функция void isChanged(), функция isChanged обеспечивает реакцию на
 // изменения значений глобальных переменных Speed, Direction и Angle
-void isChanged(char cmd) {
-  switch (cmd) {
-    case SPD:
-      if (Speed != prevSpeed) {  // значение скорости изменилось
-        setSpeed();              // вызываем обработчик изменения скорости
-      }
-      break;
-    case DIR:
-      if (Direction != prevDirection) {  // значение направления изменилось
-        setDirection();                  // вызываем обработчик изменения направления
-      }
-      break;
-    case ANG:
-      if (Angle != prevAngle) {  // значение угла поворота изменилось
-        setAngle();              // вызываем обработчик изменения угла поворота
-      }
-      break;
-    default:
-      break;
+void isChanged() {
+  if (Speed != prevSpeed) {  // значение скорости изменилось
+    setSpeed();              // вызываем обработчик изменения скорости
+  }
+  if (Direction != prevDirection) {  // значение направления изменилось
+    setDirection();                  // вызываем обработчик изменения направления
+  }
+  if (Angle != prevAngle) {  // значение угла поворота изменилось
+    setAngle();              // вызываем обработчик изменения угла поворота
   }
 }
 
 void setup() {
   Serial.begin(9600);
-  
+
   for (int i = 0; i < COUNT; i++) {
     // установка пинов для управления скоростью моторов в режим OUTPUT
     pinMode(speedPins[i], OUTPUT);
@@ -146,6 +145,7 @@ void loop() {
   // соответственно, инициализирует значения переменных Speed, Direction или Angle
   // получеными по последовательному порту значениями
   setCmd();
+  isChanged();
   Serial.print("Speed: ");  Serial.print(Speed); Serial.print(", ");
   Serial.print("Direction: "); Serial.print(Direction); Serial.print(", ");
   Serial.print("Angle: "); Serial.print(Angle); Serial.println(", ");

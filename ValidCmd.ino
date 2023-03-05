@@ -21,9 +21,12 @@ bool isValidCommand(parsedCmd* p) {
 }
 
 bool isValidCmdCode(parsedCmd* p) {
-  Serial.print("Info: isValidCmdCode code: ");
-  Serial.println(p->code);
-  return (p->code == 'S' || p->code == 'D' || p->code == 'A');
+  for (int i = 0; i < NUM_COMMANDS; i++) {
+    if (commands[i].code == p->code) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool isValidValue(parsedCmd* p) {
@@ -35,16 +38,16 @@ bool isValidValue(parsedCmd* p) {
 
   for (int i = 0; i < NUM_COMMANDS; i++) {
     if (code == commands[i].code) {
-      struct Commands command = commands[i];
-      if (command.validValues != NULL && command.numValidValues > 0) {
+      Commands* commandPtr = &commands[i];
+      if (commandPtr->validValues != NULL && commandPtr->numValidValues > 0) {
         // проверка по массиву допустимых значений
-        for (int j = 0; j < command.numValidValues; j++) {
-          if (value == command.validValues[j]) return true;
+        for (int j = 0; j < commandPtr->numValidValues; j++) {
+          if (value == commandPtr->validValues[j]) return true;
         }
         return false;
       } else {
         // проверка по минимальному и максимальному значению
-        if (value >= command.minValue && value <= command.maxValue) return true;
+        if (value >= commandPtr->minValue && value <= commandPtr->maxValue) return true;
         return false;
       }
     }

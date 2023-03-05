@@ -31,6 +31,29 @@ int setCmd() {
   return 0;
 }
 
+// получаем из последовательного порта строку ограниченную указанным символом
+char* readStringUntil(char terminator, unsigned int timeout) {
+  static char buffer[MAXCMDLEN]; // объявляем буфер статическим, чтобы он не уничтожался после выхода из функции
+  byte i = 0;
+  Serial.setTimeout(timeout); // устанавливаем таймаут
+  while (i < MAXCMDLEN - 1) {
+    if (Serial.available()) {
+      char c = Serial.read();
+      if (c == terminator) {
+        buffer[i] = '\0'; // ставим нулевой символ в конец строки
+        Serial.print("Info: readStringUntil buffer: ");
+        Serial.println(buffer);
+        return buffer; // возвращаем указатель на буфер, который всегда имеет значение
+      } else {
+        buffer[i] = c;
+        i++;
+      }
+    }
+  }
+  // если не был получен терминирующий символ, то возвращаем NULL
+  return NULL;
+}
+
 parsedCmd* parseCmd(const char* cmd){
   Serial.print("Info: parseCmd cmd: ");
   Serial.println(*cmd);
@@ -68,28 +91,7 @@ parsedCmd* parseCmd(const char* cmd){
   return p;
 }
 
-// получаем из последовательного порта строку ограниченную указанным символом
-char* readStringUntil(char terminator, unsigned int timeout) {
-  static char buffer[MAXCMDLEN]; // объявляем буфер статическим, чтобы он не уничтожался после выхода из функции
-  byte i = 0;
-  Serial.setTimeout(timeout); // устанавливаем таймаут
-  while (i < MAXCMDLEN - 1) {
-    if (Serial.available()) {
-      char c = Serial.read();
-      if (c == terminator) {
-        buffer[i] = '\0'; // ставим нулевой символ в конец строки
-        Serial.print("Info: readStringUntil buffer: ");
-        Serial.println(buffer);
-        return buffer; // возвращаем указатель на буфер, который всегда имеет значение
-      } else {
-        buffer[i] = c;
-        i++;
-      }
-    }
-  }
-  // если не был получен терминирующий символ, то возвращаем NULL
-  return NULL;
-}
+
 
 // Функция для парсинга кода команды из строки
 char parseCmdCode(const char* cmd) {
@@ -155,9 +157,12 @@ void runCmd(parsedCmd* p) {
     case DIR:
       Direction = p->value;
       break;
-    case ANG:
-      Angle = p->value;
+    case LFT:
+      Angle = -p->value;
       break;
+    case RGT:
+      Angle = p->value;
+      break;     
     default:
       break;
   }
