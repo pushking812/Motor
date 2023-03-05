@@ -44,7 +44,7 @@ const byte SPD_MAX = 100;  // максимальное допустимое зн
 
 const char DIR = 'D';      // код команды задания направления движения шасси
 const byte DIR_FORW = 1;   // допустимое значение 'вперед'
-const byte DIR_BACK = -1;  // допустимое значение 'назад'
+const byte DIR_BACK = 0;  // допустимое значение 'назад'
 
 // массив с допустимыми значениями направлений движения
 int validDirValues[] = { DIR_FORW, DIR_BACK };
@@ -53,14 +53,14 @@ const char ANG = 'A';      // код команды задания угла по
 const byte ANG_MIN = -45;  // минимальное допустимое значение
 const byte ANG_MAX = 45;   // максимальное допустимое значение
 
-// максимальная длина команды
-const byte MAXCMDLEN=16;
-
-// максимальное количество символов в коде команды кода
-const byte MAXCODLEN=1;
-
 // таймаут приема команды по последовательному порту
 const unsigned int CMD_TIMEOUT=1000;
+
+// Структура для хранения полученной команды
+struct parsedCmd {
+    char code;        // код команды
+    int value;        // значение команды
+};
 
 // структура для хранения информации о команде
 struct Commands {
@@ -77,6 +77,10 @@ struct Commands commands[3] = { { SPD, SPD_MIN, SPD_MAX, NULL, 0 },
                                 { ANG, ANG_MIN, ANG_MAX, NULL, 0 } };
 // количество команд в массиве
 const int NUM_COMMANDS = 3;
+
+// флаги проверки значения команды в ParseCmd -> parseCmdValue
+const byte IS_NUMBER = 0x01;
+const byte IS_WORD = 0x02;
 
 //---------------------------------------------------------------
 
@@ -106,7 +110,6 @@ void isChanged(char cmd) {
 
 void setup() {
   Serial.begin(9600);
-  //Serial.println("Info: setup() start");
   
   for (int i = 0; i < COUNT; i++) {
     // установка пинов для управления скоростью моторов в режим OUTPUT
@@ -123,7 +126,6 @@ void setup() {
       digitalWrite(directionPins[i][j], LOW);
     }
   }
-  Serial.println("Info: setup() end");
 
   setSpeed();
   setAngle();
@@ -131,15 +133,16 @@ void setup() {
 }
 
 void loop() {
-  // Serial.println("Info: loop() start");
-  // parseCmd получает и обрабатывает команды последовательного порта,
+  // setCmd получает и обрабатывает команды последовательного порта,
   // задающие значения Speed, Direction, Angle;
   // при получении валидной команды:
   // сохраняет переменные Speed, Direction, Angle в prevSpeed, prevDirection или prevAngle
   // соответственно, инициализирует значения переменных Speed, Direction или Angle
   // получеными по последовательному порту значениями
-  parseCmd();
+  setCmd();
+  Serial.print("Speed: ");  Serial.print(Speed); Serial.print(", ");
+  Serial.print("Direction: "); Serial.print(Direction); Serial.print(", ");
+  Serial.print("Angle: "); Serial.print(Angle); Serial.println(", ");
 
   delay(100);
-  //Serial.println("Info: setup() end");
 }
