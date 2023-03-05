@@ -82,6 +82,12 @@ const int NUM_COMMANDS = 3;
 const byte IS_NUMBER = 0x01;
 const byte IS_WORD = 0x02;
 
+// максимальное количество символов в коде команды кода
+const byte MAXCODLEN = 1;
+
+// максимальная длина команды
+const byte MAXCMDLEN = 16;
+
 //---------------------------------------------------------------
 
 // Функция void isChanged(), функция isChanged обеспечивает реакцию на

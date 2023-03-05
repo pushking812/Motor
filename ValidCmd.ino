@@ -2,7 +2,7 @@
 bool isValidCommand(parsedCmd* p) {
   // Проверка валидности кода команды
 
-  Serial.print("Error: isValidCommand parsed value: ");
+  Serial.print("Info: isValidCommand value: ");
   Serial.println(p->value);
 
   if (!isValidCmdCode(p)) {
@@ -21,6 +21,8 @@ bool isValidCommand(parsedCmd* p) {
 }
 
 bool isValidCmdCode(parsedCmd* p) {
+  Serial.print("Info: isValidCmdCode code: ");
+  Serial.println(p->code);
   return (p->code == 'S' || p->code == 'D' || p->code == 'A');
 }
 
@@ -28,7 +30,7 @@ bool isValidValue(parsedCmd* p) {
   char code = p->code;
   int value = p->value;
   
-  Serial.print("Error: isValidValue parsed command: ");
+  Serial.print("Info: isValidValue value: ");
   Serial.println(p->value);
 
   for (int i = 0; i < NUM_COMMANDS; i++) {
@@ -59,9 +61,16 @@ bool isAlpha(char c) {
 }
 
 int isNumber(const char* str) {
+  Serial.print("Info: isNumber (");
+  Serial.print(*str); Serial.print("): ");  // исправлено: разыменование указателя
   for (int i = 0; str[i] != '\0'; i++) {
-    if (!isDigit(str[i])) return 0;
+    if (!isDigit(str[i])) {
+      Serial.println("false");
+      return 0;
+    }
   }
+
+  Serial.println("true");
 
   return 1;
 }

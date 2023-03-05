@@ -1,27 +1,23 @@
-// максимальное количество символов в коде команды кода
-const byte MAXCODLEN = 1;
-
-// максимальная длина команды
-const byte MAXCMDLEN = 16;
-
 // Функция getCmd получает и обрабатывает команды последовательного порта,
 // задает значения глобальных переменных Speed, Direction и Angle
 int setCmd() {
   // Считываем команду с последовательного порта
   char* cmd = readStringUntil('\n', CMD_TIMEOUT);
   if (cmd == NULL) {
-    Serial.println("Error: Command read error");
+    Serial.println("Error: setCmd Command read error");
     return -1;
   }
 
+  Serial.print("Info: setCmd cmd: "); Serial.println(*cmd);
+
   parsedCmd* p = parseCmd(cmd);
 
-  Serial.print("Error: setCmd parsed value: ");
-  Serial.println(p->value);
+  Serial.print("Info: setCmd code, value: "); Serial.print(p->code);
+  Serial.print(", "); Serial.println(p->value);
 
   // Проверяем валидность команды
   if (!isValidCommand(p)) {
-    Serial.println("Error: Invalid command");
+    Serial.println("Error: setCmd Invalid command");
     delete p; // освобождаем выделенную память
     return -1;
   }
@@ -36,6 +32,9 @@ int setCmd() {
 }
 
 parsedCmd* parseCmd(const char* cmd){
+  Serial.print("Info: parseCmd cmd: ");
+  Serial.println(*cmd);
+  
   // Проверка на пустую строку
   if (strlen(cmd) == 0) {
     Serial.println("Error: parseCmd command absent");
@@ -61,6 +60,9 @@ parsedCmd* parseCmd(const char* cmd){
     return -1;
   }
 
+  Serial.print("Info: parseCmd code, value: ");
+  Serial.println(code);Serial.print(", ");Serial.println(value);
+
   parsedCmd* p = new parsedCmd{code, value};
   
   return p;
@@ -76,6 +78,8 @@ char* readStringUntil(char terminator, unsigned int timeout) {
       char c = Serial.read();
       if (c == terminator) {
         buffer[i] = '\0'; // ставим нулевой символ в конец строки
+        Serial.print("Info: readStringUntil buffer: ");
+        Serial.println(buffer);
         return buffer; // возвращаем указатель на буфер, который всегда имеет значение
       } else {
         buffer[i] = c;
@@ -99,18 +103,24 @@ char parseCmdCode(const char* cmd) {
 int parseCmdValue(const char* cmd, byte flags) {
   //Serial.print("Info: parseCmdValue cmd, flags: "); Serial.print(cmd);
   //Serial.print(", "); Serial.println(flags);
+  char* value = strchr(cmd, ',');
 
-  char* value = strchr(cmd, ',') + 1;
+  if (value == NULL) {
+    Serial.println("Error: parseCmdValue absent value");
+    return -1;
+  }
+  value++; // переход к символу после запятой
 
-  //Serial.print("Info: parseCmdValue value: "); Serial.println(value);
+  Serial.print("Info: parseCmdValue value: "); 
+  Serial.println(value);
 
   if (*value == '\0') {
-    // Serial.println("Error: parseCmdValue absent value");
+    Serial.println("Error: parseCmdValue absent value");
     return -1;
   }
 
    // Проверка значения на то, что оно положительное число
-  if (!isNumber(*value)) {
+  if (!isNumber(value)) {
       Serial.println("Error: parseCmdValue incorrect value");
       return -1;
   }
