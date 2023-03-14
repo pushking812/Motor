@@ -1,8 +1,7 @@
 // Функция setSpeed задает скорость движения шасси
 void setSpeed() {
   // Установка значения Angle равным 0
-  Angle = 0;
-  
+  // Angle = 0;
 
   // Установка скорости вращения для каждого мотора
   int leftSpeed = Speed * 1;
@@ -39,29 +38,27 @@ void setAngle() {
 // Функция setDirection задает направление движения шасси
 void setDirection() {
   // Остановка всех моторов
-  setMotorSpeed(MLF, 0);
-  setMotorSpeed(MLR, 0);
-  setMotorSpeed(MRF, 0);
-  setMotorSpeed(MRR, 0);
+  setMotorSpeed(MLF, STOP_SPD);
+  setMotorSpeed(MLR, STOP_SPD);
+  setMotorSpeed(MRF, STOP_SPD);
+  setMotorSpeed(MRR, STOP_SPD);
 
   // Установка направления вращения для моторов на левой и правой сторонах шасси
-  if (Direction == 1) {  // движение вперед
+  if (Direction == DIR_FORW) {  // движение вперед
     setMotorDirection(MLF, DIR_FORW);
     setMotorDirection(MLR, DIR_FORW);
     setMotorDirection(MRF, DIR_FORW);
     setMotorDirection(MRR, DIR_FORW);
-  } else if (Direction == -1) {  // движение назад
+  } else if (Direction == DIR_BACK) {  // движение назад
     setMotorDirection(MLF, DIR_BACK);
     setMotorDirection(MLR, DIR_BACK);
     setMotorDirection(MRF, DIR_BACK);
     setMotorDirection(MRR, DIR_BACK);
   }
 
-  // Установка скорости вращения для каждого мотора
-  int leftSpeed = Speed * 1;
-  int rightSpeed = Speed;
-  setMotorSpeed(MLF, leftSpeed);
-  setMotorSpeed(MLR, leftSpeed);
-  setMotorSpeed(MRF, rightSpeed);
-  setMotorSpeed(MRR, rightSpeed);
+  // Установка скорости вращения для каждого мотора, с коэффициентами корректировок
+  setMotorSpeed(MLF, REVDIR_SPD*MLF_K*Speed);
+  setMotorSpeed(MLR, REVDIR_SPD*MLR_K*Speed);
+  setMotorSpeed(MRF, REVDIR_SPD*MRF_K*Speed);
+  setMotorSpeed(MRR, REVDIR_SPD*MRR_K*Speed);
 }

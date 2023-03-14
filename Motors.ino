@@ -1,19 +1,19 @@
 // Функция setMotorDirection устанавливает направление вращения мотора
 void setMotorDirection(int motor, int dir) {
-  if (dir == 1) {  // установка направления вперед
-    digitalWrite(directionPins[motor][0], LOW);
-    digitalWrite(directionPins[motor][1], HIGH);
-  } else if (dir == -1) {  // установка направления назад
-    digitalWrite(directionPins[motor][0], HIGH);
-    digitalWrite(directionPins[motor][1], LOW);
+  if (dir == DIR_FORW) {  // установка направления вперед
+    digitalWrite(directionPins[motor-1][0], LOW);
+    digitalWrite(directionPins[motor-1][1], HIGH);
+  } else if (dir == DIR_BACK) {  // установка направления назад
+    digitalWrite(directionPins[motor-1][0], HIGH);
+    digitalWrite(directionPins[motor-1][1], LOW);
   } else {  // неверное направление
-    Serial.println("Error: Invalid motor direction");
+    Serial.println("Error: setMotorDirection Invalid motor direction");
     return;
   }
 
   // сохранение направления вращения мотора
-  direction[motor][0] = digitalRead(directionPins[motor][0]);
-  direction[motor][1] = digitalRead(directionPins[motor][1]);
+  direction[motor-1][0] = digitalRead(directionPins[motor-1][0]);
+  direction[motor-1][1] = digitalRead(directionPins[motor-1][1]);
 }
 
 // Функция setMotorSpeed устанавливает скорость вращения мотора

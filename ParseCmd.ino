@@ -8,12 +8,16 @@ int setCmd() {
     return -1;
   }
 
-  Serial.print("Info: setCmd cmd: "); Serial.println(*cmd);
+  //Serial.print("Info: setCmd cmd: "); Serial.println(*cmd);
 
   parsedCmd* p = parseCmd(cmd);
+  if (p == nullptr) {
+    Serial.println("Error: setCmd Command parsing error");
+    return -1;
+  }
 
-  Serial.print("Info: setCmd code, value: "); Serial.print(p->code);
-  Serial.print(", "); Serial.println(p->value);
+  //Serial.print("Info: setCmd code, value: "); Serial.print(p->code);
+  //Serial.print(", "); Serial.println(p->value);
 
   // Проверяем валидность команды
   if (!isValidCommand(p)) {
@@ -36,13 +40,13 @@ char* readStringUntil(char terminator, unsigned int timeout) {
   static char buffer[MAXCMDLEN]; // объявляем буфер статическим, чтобы он не уничтожался после выхода из функции
   byte i = 0;
   Serial.setTimeout(timeout); // устанавливаем таймаут
-  while (i < MAXCMDLEN - 1) {
-    if (Serial.available()) {
+  while (Serial.available()) {
+    if (i < MAXCMDLEN - 1) {
       char c = Serial.read();
       if (c == terminator) {
         buffer[i] = '\0'; // ставим нулевой символ в конец строки
-        Serial.print("Info: readStringUntil buffer: ");
-        Serial.println(buffer);
+        //Serial.print("Info: readStringUntil buffer: ");
+        //Serial.println(buffer);
         return buffer; // возвращаем указатель на буфер, который всегда имеет значение
       } else {
         buffer[i] = c;
@@ -54,10 +58,9 @@ char* readStringUntil(char terminator, unsigned int timeout) {
   return NULL;
 }
 
-parsedCmd* parseCmd(const char* cmd){
-  Serial.print("Info: parseCmd cmd: ");
-  Serial.println(*cmd);
-  
+parsedCmd* parseCmd(const char* cmd) {
+  //Serial.print("Info: parseCmd cmd: "); Serial.println(*cmd);
+
   // Проверка на пустую строку
   if (strlen(cmd) == 0) {
     Serial.println("Error: parseCmd command absent");
@@ -70,24 +73,24 @@ parsedCmd* parseCmd(const char* cmd){
     Serial.println("Error: parseCmd comma absent");
     return nullptr;
   }
-  
+
   char code = parseCmdCode(cmd);
-  if (code==-1) {
+  if (code == -1) {
     Serial.println("Error: parseCmd wrong code format");
-    return -1;
-  }
-  
-  int value = parseCmdValue(cmd, IS_NUMBER | IS_WORD);
-  if (value==-1) {
-    Serial.println("Error: parseCmd wrong value format");
-    return -1;
+    return nullptr;
   }
 
-  Serial.print("Info: parseCmd code, value: ");
-  Serial.println(code);Serial.print(", ");Serial.println(value);
+  int value = parseCmdValue(cmd, IS_NUMBER | IS_WORD);
+  if (value == -1) {
+    Serial.println("Error: parseCmd wrong value format");
+    return nullptr;
+  }
+
+  //Serial.print("Info: parseCmd code, value: ");
+  //Serial.print(code);Serial.print(", ");Serial.println(value);
 
   parsedCmd* p = new parsedCmd{code, value};
-  
+
   return p;
 }
 
@@ -95,7 +98,7 @@ parsedCmd* parseCmd(const char* cmd){
 
 // Функция для парсинга кода команды из строки
 char parseCmdCode(const char* cmd) {
-  if (cmd[1]!=',') return -1;
+  if (cmd[1] != ',') return -1;
   return cmd[0];
 }
 
@@ -113,36 +116,36 @@ int parseCmdValue(const char* cmd, byte flags) {
   }
   value++; // переход к символу после запятой
 
-  Serial.print("Info: parseCmdValue value: "); 
-  Serial.println(value);
+  //Serial.print("Info: parseCmdValue value: ");
+  //Serial.println(value);
 
   if (*value == '\0') {
-    Serial.println("Error: parseCmdValue absent value");
+    Serial.println("Error: parseCmdValue zero value");
     return -1;
   }
 
-   // Проверка значения на то, что оно положительное число
+  // Проверка значения на то, что оно положительное число
   if (!isNumber(value)) {
-      Serial.println("Error: parseCmdValue incorrect value");
-      return -1;
+    Serial.println("Error: parseCmdValue value is not number");
+    return -1;
   }
 
   bool isValueCorrect = false;
-  
+
   if ((bitRead(flags, IS_NUMBER) & isNumber(value)) == 1) isValueCorrect = true;
   if ((bitRead(flags, IS_WORD) & isWord(value)) == 1) isValueCorrect = true;
 
   if (!isValueCorrect) {
     /*Serial.print("Error: parseCmdValue incorrect value: ");
-    if (flags & IS_NUMBER) {
+      if (flags & IS_NUMBER) {
       Serial.println("not number ");
-    }
-    if (flags & IS_WORD) {
+      }
+      if (flags & IS_WORD) {
       Serial.println("not word ");
-    } */
+      } */
     return -1;
   }
-  
+
   //Serial.print("Info: Result of validation: true");
   return atoi(value);
 }
@@ -152,17 +155,21 @@ int parseCmdValue(const char* cmd, byte flags) {
 void runCmd(parsedCmd* p) {
   switch (p->code) {
     case SPD:
+      prevSpeed = Speed;
       Speed = p->value;
       break;
     case DIR:
+      prevDirection = Direction;
       Direction = p->value;
       break;
     case LFT:
+      prevAngle = Angle;
       Angle = -p->value;
       break;
     case RGT:
+      prevAngle = Angle;
       Angle = p->value;
-      break;     
+      break;
     default:
       break;
   }

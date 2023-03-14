@@ -42,9 +42,17 @@ const char SPD = 'S';      // код команды задания скорос�
 const byte SPD_MIN = 0;    // минимальное допустимое значение
 const byte SPD_MAX = 100;  // максимальное допустимое значение
 
+const byte STOP_SPD = 0;    // скорость остановки моторов (0-100)
+const byte REVDIR_SPD = 25; // скорость при смене направления движения
+
+const byte MLF_K = 1;      // корректировка скоростей вращения моторов
+const byte MLR_K = 1;
+const byte MRF_K = 1;
+const byte MRR_K = 1;
+
 const char DIR = 'D';      // код команды задания направления движения шасси
 const byte DIR_FORW = 1;   // допустимое значение 'вперед'
-const byte DIR_BACK = 2;  // допустимое значение 'назад'
+const byte DIR_BACK = 2;   // допустимое значение 'назад'
 
 // массив с допустимыми значениями направлений движения
 int validDirValues[] = { DIR_FORW, DIR_BACK };
@@ -59,7 +67,7 @@ const byte RGT_MIN = 0;  // минимальное допустимое знач
 const byte RGT_MAX = 45;   // максимальное допустимое значение вправо
 
 // таймаут приема команды по последовательному порту
-const unsigned int CMD_TIMEOUT = 1000;
+const unsigned int CMD_TIMEOUT = 100;
 
 // Структура для хранения полученной команды
 struct parsedCmd {
@@ -103,14 +111,21 @@ const byte MAXCMDLEN = 16;
 // изменения значений глобальных переменных Speed, Direction и Angle
 void isChanged() {
   if (Speed != prevSpeed) {  // значение скорости изменилось
+    prevSpeed = Speed;
     setSpeed();              // вызываем обработчик изменения скорости
+    Serial.print("Speed: ");  Serial.print(Speed); Serial.print(" ");
   }
   if (Direction != prevDirection) {  // значение направления изменилось
+    prevDirection = Direction;
     setDirection();                  // вызываем обработчик изменения направления
+    Serial.print("Direction: "); Serial.print(Direction); Serial.print(" ");
   }
   if (Angle != prevAngle) {  // значение угла поворота изменилось
+    prevAngle = Angle;
     setAngle();              // вызываем обработчик изменения угла поворота
+    Serial.print("Angle: "); Serial.print(Angle);
   }
+  Serial.println();
 }
 
 void setup() {
@@ -144,11 +159,7 @@ void loop() {
   // сохраняет переменные Speed, Direction, Angle в prevSpeed, prevDirection или prevAngle
   // соответственно, инициализирует значения переменных Speed, Direction или Angle
   // получеными по последовательному порту значениями
-  setCmd();
-  isChanged();
-  Serial.print("Speed: ");  Serial.print(Speed); Serial.print(", ");
-  Serial.print("Direction: "); Serial.print(Direction); Serial.print(", ");
-  Serial.print("Angle: "); Serial.print(Angle); Serial.println(", ");
+  if (Serial.available() && setCmd()!=-1) isChanged();
 
   delay(100);
 }
