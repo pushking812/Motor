@@ -4,16 +4,22 @@ void setSpeed() {
   // Angle = 0;
 
   // Установка скорости вращения для каждого мотора
-  int leftSpeed = Speed * 1;
-  int rightSpeed = Speed;
-  setMotorSpeed(MLF, leftSpeed);
-  setMotorSpeed(MLR, leftSpeed);
-  setMotorSpeed(MRF, rightSpeed);
-  setMotorSpeed(MRR, rightSpeed);
+  if (Speed == SPD_MIN) {
+    Direction = DIR_STOP;
+  }
+
+  int leftSpeed = Speed * KL;
+  int rightSpeed = Speed * KR;
+
+  setMotorSpeed(MLF, leftSpeed * MLF_K);
+  setMotorSpeed(MLR, leftSpeed * MLR_K);
+  setMotorSpeed(MRF, rightSpeed * MRF_K);
+  setMotorSpeed(MRR, rightSpeed * MRR_K);
 }
 
 // Функция setAngle задает угол поворота шасси
 void setAngle() {
+  Serial.println("Info: setAngle");
   // Вычисление коэффициента k, определяющего отношение скоростей моторов при повороте
   float k = (45 - abs(Angle)) / 45.0;
 
@@ -29,36 +35,43 @@ void setAngle() {
     leftSpeed = Speed;
     rightSpeed = Speed;
   }
-  setMotorSpeed(MLF, leftSpeed);
-  setMotorSpeed(MLR, leftSpeed);
-  setMotorSpeed(MRF, rightSpeed);
-  setMotorSpeed(MRR, rightSpeed);
+
+  KL = leftSpeed;
+  KR = rightSpeed;
+  Serial.print("Info: setAngle leftSpeed, rightSpeed: ");
+  Serial.print(leftSpeed);
+  Serial.print(", ");
+  Serial.println(rightSpeed);
+  byte SpeedMap = map(Speed, ANG_MAX, ANG_MIN, SPD_MIN, SPD_MAX);
+  Speed = constrain(SpeedMap, SPD_MIN, Speed);
+  Serial.print("Info: setAngle setting speed: ");
+  Serial.println(Speed);
 }
 
 // Функция setDirection задает направление движения шасси
 void setDirection() {
-  // Остановка всех моторов
-  setMotorSpeed(MLF, STOP_SPD);
-  setMotorSpeed(MLR, STOP_SPD);
-  setMotorSpeed(MRF, STOP_SPD);
-  setMotorSpeed(MRR, STOP_SPD);
-
   // Установка направления вращения для моторов на левой и правой сторонах шасси
+  Serial.println("Info: setDirection");
   if (Direction == DIR_FORW) {  // движение вперед
-    setMotorDirection(MLF, DIR_FORW);
-    setMotorDirection(MLR, DIR_FORW);
-    setMotorDirection(MRF, DIR_FORW);
-    setMotorDirection(MRR, DIR_FORW);
+    setAllMotorDirection(DIR_FORW);
   } else if (Direction == DIR_BACK) {  // движение назад
-    setMotorDirection(MLF, DIR_BACK);
-    setMotorDirection(MLR, DIR_BACK);
-    setMotorDirection(MRF, DIR_BACK);
-    setMotorDirection(MRR, DIR_BACK);
+    setAllMotorDirection(DIR_BACK);
+  } else if (Direction == DIR_STOP) {  // стоп машина
+    Serial.println("Info: setDirection stopping motors");
+    Speed = STOP_SPD;
+    Serial.println("Info: setDirection setting zero direction");
+    setAllMotorDirection(DIR_STOP);
+    return;
   }
 
   // Установка скорости вращения для каждого мотора, с коэффициентами корректировок
-  setMotorSpeed(MLF, REVDIR_SPD*MLF_K*Speed);
-  setMotorSpeed(MLR, REVDIR_SPD*MLR_K*Speed);
-  setMotorSpeed(MRF, REVDIR_SPD*MRF_K*Speed);
-  setMotorSpeed(MRR, REVDIR_SPD*MRR_K*Speed);
+  Serial.println("Info: setDirection setting speed: REVDIR_SPD");
+  Speed = REVDIR_SPD;
+}
+
+void setAllMotorDirection(byte dir) {
+  setMotorDirection(MLF, dir);
+  setMotorDirection(MLR, dir);
+  setMotorDirection(MRF, dir);
+  setMotorDirection(MRR, dir);
 }
