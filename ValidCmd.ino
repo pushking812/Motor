@@ -2,17 +2,17 @@
 bool isValidCommand(parsedCmd* p) {
   // Проверка валидности кода команды
 
-  //Serial.print("Info: isValidCommand value: ");
+  //Serial.print("(I) isValidCommand value: ");
   //Serial.println(p->value);
 
   if (!isValidCmdCode(p)) {
-    Serial.println("Error: isValidCommand code not found");
+    //Serial.println("(E) isValidCommand code not found");
     return false;
   }
   // Проверка валидности значения для команды
 
   if (!isValidValue(p)) {
-    Serial.println("Error: isValidCommand wrong value");
+    //Serial.println("(E) isValidCommand wrong value");
     return false;
   }
 
@@ -33,7 +33,7 @@ bool isValidValue(parsedCmd* p) {
   char code = p->code;
   int value = p->value;
   
-  //Serial.print("Info: isValidValue value: ");
+  //Serial.print("(I) isValidValue value: ");
   //Serial.println(p->value);
 
   for (int i = 0; i < NUM_COMMANDS; i++) {
@@ -65,10 +65,7 @@ bool isAlpha(char c) {
 
 int isNumber(const char* str) {
   for (int i = 0; str[i] != '\0'; i++) {
-    if (!isDigit(str[i])) {
-      Serial.println("false");
-      return 0;
-    }
+    if (!isDigit(str[i])) return 0;
   }
 
   return 1;

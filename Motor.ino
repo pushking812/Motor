@@ -1,5 +1,7 @@
 /* Программма управления движением колесного шасси при помощи микроконтроллера Arduino Nano*/
 
+#include "Debug.h"
+
 // объявление переменных, констант, массивов
 const byte MLF = 1;  // порядковый номер левого переднего мотора mLF
 const byte MLR = 2;  // порядковый номер левого заднего мотора mLR
@@ -42,17 +44,17 @@ const char SPD = 'S';      // код команды задания скорос�
 const byte SPD_MIN = 0;    // минимальное допустимое значение
 const byte SPD_MAX = 100;  // максимальное допустимое значение
 
-byte KL = 1;  // коэффициент скорости левых колес при повороте
-byte KR = 1;  // коэффициент скорости правых колес при повороте
+float KL = 1.0;  // коэффициент скорости левых колес при повороте
+float KR = 1.0;  // коэффициент скорости правых колес при повороте
 
 const byte STOP_SPD = 0;     // скорость остановки моторов (0-100)
 const byte REVDIR_SPD = 25;  // скорость при смене направления движения
 
 
-const byte MLF_K = 1;  // корректировка скоростей вращения моторов
-const byte MLR_K = 1;
-const byte MRF_K = 1;
-const byte MRR_K = 1;
+const float MLF_K = 1;  // корректировка скоростей вращения моторов
+const float MLR_K = 1;
+const float MRF_K = 1;
+const float MRR_K = 1;
 
 const char DIR = 'D';                                     // код команды задания направления движения шасси
 const byte DIR_STOP = 0;                                  // допустимое значение 'останов'
@@ -105,16 +107,16 @@ const byte MAXCODLEN = 1;
 // максимальная длина команды
 const byte MAXCMDLEN = 16;
 
-//---------------------------------------------------------------
-
 // Функция void isChanged(), функция isChanged обеспечивает реакцию на
 // изменения значений глобальных переменных Speed, Direction и Angle
 void isChanged() {
+  const char* DBG_FUNC="isChanged";
+
   if (Speed != prevSpeed) {  // значение скорости изменилось
+    DebugMsg(DBG_PRE_INF, DBG_FUNC, DBG_MSG_VAL, "prevSpeed", prevSpeed, false);
+    DebugMsg(DBG_PRE_INF, "", "", "Speed", Speed, true);
     prevSpeed = Speed;
     setSpeed();  // вызываем обработчик изменения скорости
-    Serial.print("Speed: ");
-    Serial.println(Speed);
   }
   if (Direction != prevDirection) {  // значение направления изменилось
     int savedDirection = Direction;
@@ -122,17 +124,17 @@ void isChanged() {
     setDirection();
     delay(1000);
 
+    DebugMsg(DBG_PRE_INF, DBG_FUNC, DBG_MSG_VAL, "prevDirection", prevDirection, false);
+    DebugMsg(DBG_PRE_INF, "", "", "Direction", Direction, true);
     Direction = savedDirection;
     prevDirection = Direction;
     setDirection();  // вызываем обработчик изменения направления
-    Serial.print("Direction: ");
-    Serial.println(Direction);
   }
   if (Angle != prevAngle) {  // значение угла поворота изменилось
+    DebugMsg(DBG_PRE_INF, DBG_FUNC, DBG_MSG_VAL, "prevAngle", prevAngle, false);
+    DebugMsg(DBG_PRE_INF, "", "", "Angle", Angle, true);
     prevAngle = Angle;
     setAngle();  // вызываем обработчик изменения угла поворота
-    Serial.print("Angle: ");
-    Serial.println(Angle);
   }
 }
 
@@ -163,7 +165,7 @@ void setup() {
   Direction = DIR_STOP;
   Angle = 0;
   
-  isChanged();
+  //isChanged();
 }
 
 void loop() {
@@ -173,7 +175,10 @@ void loop() {
   // сохраняет переменные Speed, Direction, Angle в prevSpeed, prevDirection или prevAngle
   // соответственно, инициализирует значения переменных Speed, Direction или Angle
   // получеными по последовательному порту значениями
-  if (Serial.available() && setCmd() != -1) isChanged();
+  if (Serial.available() && setCmd() != -1);
+  isChanged();
 
   delay(100);
 }
+
+
