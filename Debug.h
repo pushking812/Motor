@@ -1,6 +1,4 @@
-#ifndef Debug_h  // если библиотека Button не подключена
-#define Debug_h  // тогда подключаем ее
-#endif
+#pragma once
 
 #include "Arduino.h"
 

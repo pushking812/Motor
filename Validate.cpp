@@ -1,3 +1,12 @@
+#include "Validate.h"
+
+Commands commands = {
+  { SPD, SPD_MIN, SPD_MAX, NULL, 0 },
+  { DIR, DIR_STOP, DIR_BACK, validDirValues, 3 },
+  { LFT, ANG_MIN, ANG_MAX, NULL, 0 },
+  { RGT, ANG_MIN, ANG_MAX, NULL, 0 }
+};
+
 // Валидация команды
 bool isValidCommand(parsedCmd* p) {
   // Проверка валидности кода команды
@@ -38,7 +47,7 @@ bool isValidValue(parsedCmd* p) {
 
   for (int i = 0; i < NUM_COMMANDS; i++) {
     if (code == commands[i].code) {
-      Commands* commandPtr = &commands[i];
+      Command* commandPtr = &commands[i];
       if (commandPtr->validValues != NULL && commandPtr->numValidValues > 0) {
         // проверка по массиву допустимых значений
         for (int j = 0; j < commandPtr->numValidValues; j++) {

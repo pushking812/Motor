@@ -1,3 +1,5 @@
+
+
 // Функция getCmd получает и обрабатывает команды последовательного порта,
 // задает значения глобальных переменных Speed, Direction и Angle
 int setCmd() {
@@ -162,26 +164,22 @@ int parseCmdValue(const char* cmd, byte flags) {
 // Записывает значение команды в соответствующую переменную
 // Speed, Direction или Angle
 void runCmd(parsedCmd* p) {
-  const char* DBG_FUNC="runCmd";
+  const char* DBG_FUNC = "runCmd";
 
-  switch (p->code) {
-    case SPD:
-      prevSpeed = Speed;
-      Speed = p->value;
-      break;
-    case DIR:
-      prevDirection = Direction;
-      Direction = p->value;
-      break;
-    case LFT:
-      prevAngle = Angle;
-      Angle = -p->value;
-      break;
-    case RGT:
-      prevAngle = Angle;
-      Angle = p->value;
-      break;
-    default:
-      break;
+  if (p->code == SPD) {
+    prevSpeed = Speed;
+    Speed = p->value;
+  }
+  if (p->code == DIR) {
+    prevDirection = Direction;
+    Direction = p->value;
+  }
+  if (p->code == LFT) {
+    prevAngle = Angle;
+    Angle = -p->value;
+  }
+  if (p->code == RGT) {
+    prevAngle = Angle;
+    Angle = p->value;
   }
 }
