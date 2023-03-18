@@ -1,4 +1,3 @@
-#include "Arduino.h"
 #include "ParseCmd.h"
 
 // Получение команды из последовательного порта (setCmd->readStringUntil), 

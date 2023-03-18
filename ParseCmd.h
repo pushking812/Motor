@@ -5,8 +5,8 @@
 #include "Validate.h"
 
 // флаги проверки значения команды в ParseCmd -> parseCmdValue
-const byte IS_NUMBER=1;
-const byte IS_WORD=2;
+const byte IS_NUMBER = 0x01;
+const byte IS_WORD = 0x02;
 
 // Получение команды из последовательного порта (setCmd->readStringUntil), 
 // парсинг поступившей команды (setCmd->parseCmd),

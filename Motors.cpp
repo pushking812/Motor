@@ -1,3 +1,44 @@
+#include "Motors.h"
+
+// Обозначения моторов:
+// левый передний - mLF, левый задний - mLR
+// правый передний - mRF, правый задний - mRR
+
+// объявление переменных, констант, массивов
+const int speedPins[COUNT] = { SP_MLF, SP_MLR, SP_MRF, SP_MRR };  
+
+// текущие значения скоростей вращения моторов
+int speed[COUNT] = { 0, 0, 0, 0 };      // значения скоростей моторов
+
+// пины управления направлением вращения моторов
+const int directionPins[COUNT][PINCOUNT] = {
+  { DP_MLF1, DP_MLF2 }, 
+  { DP_MLR1, DP_MLR2 }, 
+  { DP_MRF1, DP_MRF2 }, 
+  { DP_MRR1, DP_MRR2 }   
+};
+
+// текущие направления вращения моторов
+int direction[COUNT][PINCOUNT] = { { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 } };
+
+// установка пинов моторов
+void initMotorPins() {
+   for (int i = 0; i < COUNT; i++) {
+    // установка пинов для управления скоростью моторов в режим OUTPUT
+    pinMode(speedPins[i], OUTPUT);
+    // установка значений LOW на всех пинах для управления скоростью моторов
+    digitalWrite(speedPins[i], LOW);
+  }
+
+  for (int i = 0; i < COUNT; i++) {
+    for (int j = 0; j < PINCOUNT; j++) {
+      // установка пинов для управления направлением вращения моторов в режим OUTPUT
+      pinMode(directionPins[i][j], OUTPUT);
+      // установка значений на всех пинах для управления направлением вращения моторов
+      digitalWrite(directionPins[i][j], LOW);
+    }
+  }
+}
 
 // Функция setMotorDirection устанавливает направление вращения мотора
 void setMotorDirection(int motor, int dir) {
