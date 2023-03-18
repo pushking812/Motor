@@ -1,7 +1,10 @@
+#include "Arduino.h"
+#include "ParseCmd.h"
 
-
-// Функция getCmd получает и обрабатывает команды последовательного порта,
-// задает значения глобальных переменных Speed, Direction и Angle
+// Получение команды из последовательного порта (setCmd->readStringUntil), 
+// парсинг поступившей команды (setCmd->parseCmd),
+// валидация обработанной команды (setCmd->isValidCommand),
+// изменение значений глобальных переменных Speed, Direction и Angle
 int setCmd() {
   const char* DBG_FUNC="setCmd";
 
@@ -42,7 +45,7 @@ int setCmd() {
   return 0;
 }
 
-// получаем из последовательного порта строку ограниченную указанным символом
+// Получение команды из последовательного порта 
 char* readStringUntil(char terminator, unsigned int timeout) {
   const char* DBG_FUNC="readStringUntil";
 
@@ -67,6 +70,7 @@ char* readStringUntil(char terminator, unsigned int timeout) {
   return NULL;
 }
 
+// Парсинг поступившей команды
 parsedCmd* parseCmd(const char* cmd) {
   const char* DBG_FUNC="parseCmd";
   //Serial.print("(I) parseCmd cmd: "); Serial.println(*cmd);
@@ -104,7 +108,7 @@ parsedCmd* parseCmd(const char* cmd) {
   return p;
 }
 
-// Функция для парсинга кода команды из строки
+// Парсинг кода команды
 char parseCmdCode(const char* cmd) {
   const char* DBG_FUNC="parseCmdCode";
 
@@ -112,9 +116,7 @@ char parseCmdCode(const char* cmd) {
   return cmd[0];
 }
 
-// Функция для парсинга значения команды из строки
-// для проверки, что значение либо число, либо слово:
-// parseCmdValue(cmd, IS_NUMBER | IS_WORD)
+// Парсинг параметра команды
 int parseCmdValue(const char* cmd, byte flags) {
   const char* DBG_FUNC="parseCmdValue";
   //Serial.print("(I) parseCmdValue cmd, flags: "); Serial.print(cmd);
@@ -161,7 +163,7 @@ int parseCmdValue(const char* cmd, byte flags) {
   return atoi(value);
 }
 
-// Записывает значение команды в соответствующую переменную
+// Изменение значений соответствующих переменных
 // Speed, Direction или Angle
 void runCmd(parsedCmd* p) {
   const char* DBG_FUNC = "runCmd";

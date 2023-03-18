@@ -2,11 +2,9 @@
 
 #include "Debug.h"
 #include "Config.h"
-#include "Validate.h"
+#include "ParseCmd.h"
 
-// флаги проверки значения команды в ParseCmd -> parseCmdValue
-const byte IS_NUMBER;
-const byte IS_WORD;
+
 
 // коэффициент скорости пар колес при повороте
 float KL = 1.0;  // левой пары
