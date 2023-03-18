@@ -24,6 +24,15 @@ const int NUM_COMMANDS = 4;
 // массив команд
 typedef Command Commands[NUM_COMMANDS];
 
+// таймаут приема команды по последовательному порту, ms
+const unsigned int CMD_TIMEOUT = 250;
+
+// максимальное количество символов в коде команды кода
+const byte MAXCODLEN = 1;
+
+// максимальная длина команды
+const byte MAXCMDLEN = 16;
+
 // Валидация команды
 bool isValidCommand(parsedCmd* p);
 

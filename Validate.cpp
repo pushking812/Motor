@@ -1,5 +1,7 @@
 #include "Validate.h"
 
+int validDirValues[3]={ DIR_FORW, DIR_BACK, DIR_STOP };
+
 Commands commands = {
   { SPD, SPD_MIN, SPD_MAX, NULL, 0 },
   { DIR, DIR_STOP, DIR_BACK, validDirValues, 3 },

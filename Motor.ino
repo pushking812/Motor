@@ -8,6 +8,36 @@
 const byte IS_NUMBER;
 const byte IS_WORD;
 
+// коэффициент скорости пар колес при повороте
+float KL = 1.0;  // левой пары
+float KR = 1.0;  // правой пары
+
+
+// объявление переменных, констант, массивов
+const int speedPins[COUNT] = { SP_MLF, SP_MLR, SP_MRF, SP_MRR };  
+
+// текущие значения скоростей вращения моторов
+int speed[COUNT] = { 0, 0, 0, 0 };      // значения скоростей моторов
+
+// пины управления направлением вращения моторов
+const int directionPins[COUNT][PINCOUNT] = {
+  { DP_MLF1, DP_MLF2 }, 
+  { DP_MLR1, DP_MLR2 }, 
+  { DP_MRF1, DP_MRF2 }, 
+  { DP_MRR1, DP_MRR2 }   
+};
+
+// текущие направления вращения моторов
+int direction[COUNT][PINCOUNT] = { { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 } };
+
+
+// Обозначения моторов:
+// левый передний - mLF, левый задний - mLR
+// правый передний - mRF, правый задний - mRR
+
+// порядковые номера моторов
+const byte MLF = 1, MLR = 2, MRF = 3, MRR = 4;  
+
 // Функция void isChanged(), функция isChanged обеспечивает реакцию на
 // изменения значений глобальных переменных Speed, Direction и Angle
 void isChanged() {
@@ -58,8 +88,6 @@ void setup() {
     }
   }
 
-
-  
   //isChanged();
 }
 
