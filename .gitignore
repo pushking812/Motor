@@ -3,3 +3,5 @@ ignore/
 .theia/
 motor.pdsprj.G6.123.workspace
 Motor.pdsprj.CPC021.pustoshkin.workspace
+.gitignore
+.gitattributes
