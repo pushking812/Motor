@@ -63,7 +63,7 @@ void setAngle() {
     KL = 1.0;  KR = 1.0;    
   }
    
-  byte SpeedMap = map(Angle*sign, ANG_MIN, ANG_MAX, SPD_MAX, 50);
+  byte SpeedMap = map(Angle*sign, ANG_MIN, ANG_MAX, SPD_MAX, 70);
 
   if (Speed == 0) i=1;
   else if (Speed == 100) i=-1;
@@ -130,7 +130,7 @@ void isChanged() {
     int savedDirection = Direction;
     Direction = DIR_STOP;  // Остановка всех моторов
     setDirection();
-    delay(1000);
+    delay(100);
 
     DebugMsg(DBG_PRE_INF, DBG_FUNC, DBG_MSG_VAL, "prevDirection", prevDirection, false);
     DebugMsg(DBG_PRE_INF, "", "", "Direction", Direction, true);

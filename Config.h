@@ -10,8 +10,8 @@
 const byte SP_MLF = 3, SP_MLR = 5, SP_MRF = 6, SP_MRR = 9;
 
 // пины управления направлением вращения моторов
-const byte DP_MLF1 = 2, DP_MLR1 = 7, DP_MRF1 = 10, DP_MRR1 = 12;
-const byte DP_MLF2 = 4, DP_MLR2 = 8, DP_MRF2 = 11, DP_MRR2 = 13;
+const byte DP_MLF1 = 2, DP_MLR1 = 7, DP_MRF1 = 13, DP_MRR1 = 15;
+const byte DP_MLF2 = 4, DP_MLR2 = 8, DP_MRF2 = 14, DP_MRR2 = 16;
 
 extern int Speed;          // текущая скорость шасси
 extern int Direction;      // текущее направление движения шасси
@@ -29,7 +29,7 @@ const byte SPD_MIN = 0;   // минимальное значение
 const byte SPD_MAX = 100; // максимальное значение
 
 const byte SPD_STOP = 0;     // скорость остановки моторов (0-100)
-const byte SPD_REVDIR = 25;  // скорость при смене направления движения
+const byte SPD_REVDIR = 60;  // скорость при смене направления движения
 
 // "ручная" корректировка скоростей вращения моторов
 const float MLF_K = 1, MLR_K = 1, MRF_K = 1, MRR_K = 1;

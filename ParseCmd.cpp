@@ -4,11 +4,13 @@
 // парсинг поступившей команды (setCmd->parseCmd),
 // валидация обработанной команды (setCmd->isValidCommand),
 // изменение значений глобальных переменных Speed, Direction и Angle
-int setCmd() {
+//int setCmd() {
+int setCmd(char* cmd) {
   const char* DBG_FUNC="setCmd";
 
   // Считываем команду с последовательного порта
-  char* cmd = readStringUntil('\n', CMD_TIMEOUT);
+  //char* cmd = readStringUntil('\n', CMD_TIMEOUT);
+  
   if (cmd == NULL) {
     DebugMsg(DBG_PRE_ERR, DBG_FUNC, DBG_MSG_CC, "cmd", *cmd, true);
     return -1;

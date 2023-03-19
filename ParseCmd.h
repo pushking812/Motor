@@ -12,7 +12,8 @@ const byte IS_WORD = 0x02;
 // парсинг поступившей команды (setCmd->parseCmd),
 // валидация обработанной команды (setCmd->isValidCommand),
 // изменение значений глобальных переменных Speed, Direction и Angle
-int setCmd();
+int setCmd(char* cmd);
+//int setCmd();
 
 // Получение команды из последовательного порта 
 char* readStringUntil(char terminator, unsigned int timeout);
